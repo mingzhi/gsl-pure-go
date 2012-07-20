@@ -3,6 +3,7 @@ package stat
 import (
 	"github.com/mingzhi/go-utils/assert"
 	"math/rand"
+	"sort"
 	"testing"
 )
 
@@ -312,5 +313,55 @@ func TestCorrelation(t *testing.T) {
 	correct = assert.EqualFloat(correlation, expected, delta64)
 	if !correct {
 		t.Errorf("correlation: %f, expected: %f\n", correlation, expected)
+	}
+}
+
+func TestMedianFromSortedData(t *testing.T) {
+	var median, expected float64
+	var correct bool
+	// test float
+	sorted_floats := make([]float64, len(fgroupa.raw))
+	copy(sorted_floats, fgroupa.raw)
+	sort.Float64s(sorted_floats)
+	fgroup := make([]float64, len(sorted_floats)*fgroupa.stride)
+	for i, item := range sorted_floats {
+		fgroup[i*fgroupa.stride] = item
+	}
+	// n
+	median = MedianFromSortedData(fgroup, fgroupa.stride, fgroupa.n)
+	expected = 0.07505
+	correct = assert.EqualFloat(median, expected, delta64)
+	if !correct {
+		t.Errorf("median: %f, expected %f\n", median, expected)
+	}
+	// n - 1
+	median = MedianFromSortedData(fgroup, fgroupa.stride, fgroupa.n-1)
+	expected = 0.0728
+	correct = assert.EqualFloat(median, expected, delta64)
+	if !correct {
+		t.Errorf("median: %f, expected %f\n", median, expected)
+	}
+
+	// test int
+	sorted_ints := make([]int, len(igroupa.raw))
+	copy(sorted_ints, igroupa.raw)
+	sort.Ints(sorted_ints)
+	igroup := make([]int, len(sorted_ints)*igroupa.stride)
+	for i, item := range sorted_ints {
+		igroup[i*igroupa.stride] = item
+	}
+	// n
+	median = MedianFromSortedData(igroup, igroupa.stride, igroupa.n)
+	expected = 18
+	correct = assert.EqualFloat(median, expected, delta64)
+	if !correct {
+		t.Errorf("median: %f, expected %f\n", median, expected)
+	}
+	// n - 1
+	median = MedianFromSortedData(igroup, igroupa.stride, igroupa.n-1)
+	expected = 18
+	correct = assert.EqualFloat(median, expected, delta64)
+	if !correct {
+		t.Errorf("median: %f, expected %f\n", median, expected)
 	}
 }
