@@ -1,7 +1,7 @@
 package stat
 
 import (
-	"github.com/mingzhi/assert"
+	"github.com/mingzhi/go-utils/assert"
 	"math/rand"
 	"testing"
 )
@@ -104,6 +104,29 @@ func TestMeanInts(t *testing.T) {
 	correct := assert.EqualFloat(mean, i_groupa.mean, delta64)
 	if !correct {
 		t.Errorf("mean: %f, expected: %f\n", mean, i_groupa.mean)
+	}
+}
+
+func TestMean(t *testing.T) {
+	mean := Mean(i_groupa.group, i_groupa.stride, i_groupa.n)
+	correct := assert.EqualFloat(mean, i_groupa.mean, delta64)
+	if !correct {
+		t.Errorf("Int mean: %f, expected: %f\n", mean, i_groupa.mean)
+	}
+
+	mean = Mean(f_groupa.group, f_groupa.stride, f_groupa.n)
+	correct = assert.EqualFloat(mean, f_groupa.mean, delta64)
+	if !correct {
+		t.Errorf("Float mean: %f, expected: %f\n", mean, f_groupa.mean)
+	}
+
+	data := []string{"1", "2", "3", "4"}
+	stride := 1
+	n := len(data)
+	mean = Mean(data, stride, n)
+	correct = assert.EqualFloat(mean, 2.5, delta64)
+	if !correct {
+		t.Errorf("String mean: %f, expected: %f\n", mean, 2.5)
 	}
 }
 
