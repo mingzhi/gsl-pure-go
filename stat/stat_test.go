@@ -20,9 +20,16 @@ type TestingFloats struct {
 }
 
 type TestingInts struct {
-	raw, group     []int
-	stride, n      int
-	mean, variance float64
+	raw, group               []int
+	stride, n                int
+	mean                     float64
+	variance                 float64
+	variance_with_fixed_mean float64
+	sd                       float64
+	sd_with_fixed_mean       float64
+	tss                      float64
+	tss_m                    float64
+	absdev                   float64
 }
 
 var (
@@ -77,13 +84,19 @@ func init() {
 
 	i_groupa = TestingInts{
 		raw: []int{
-			1, 3, 5, 5,
-			3, 4, 7, 8,
-			100, 3, 5, 6,
+			17, 18, 16, 18, 12,
+			20, 18, 20, 20, 22,
+			20, 10, 8, 12, 16,
+			16, 18, 20, 18, 21,
 		},
-		mean:   12.5,
-		n:      12,
+		n:      20,
 		stride: stride,
+		mean:   17.0,
+		variance_with_fixed_mean: 13.7,
+		variance:                 14.4210526315789,
+		sd_with_fixed_mean:       3.70135110466435,
+		sd:                       3.79750610685209,
+		absdev:                   2.9,
 	}
 	i_groupa.group = make([]int, i_groupa.n*stride)
 	for i, item := range i_groupa.raw {
@@ -108,18 +121,21 @@ func TestMeanInts(t *testing.T) {
 }
 
 func TestMean(t *testing.T) {
-	mean := Mean(i_groupa.group, i_groupa.stride, i_groupa.n)
-	correct := assert.EqualFloat(mean, i_groupa.mean, delta64)
+	var mean float64
+	var correct bool
+	// test float
+	mean = Mean(i_groupa.group, i_groupa.stride, i_groupa.n)
+	correct = assert.EqualFloat(mean, i_groupa.mean, delta64)
 	if !correct {
 		t.Errorf("Int mean: %f, expected: %f\n", mean, i_groupa.mean)
 	}
-
+	// test int
 	mean = Mean(f_groupa.group, f_groupa.stride, f_groupa.n)
 	correct = assert.EqualFloat(mean, f_groupa.mean, delta64)
 	if !correct {
 		t.Errorf("Float mean: %f, expected: %f\n", mean, f_groupa.mean)
 	}
-
+	// test string
 	data := []string{"1", "2", "3", "4"}
 	stride := 1
 	n := len(data)
@@ -131,42 +147,83 @@ func TestMean(t *testing.T) {
 }
 
 func TestVarianceWithFixedMean(t *testing.T) {
-	mean := MeanFloats(f_groupa.group, f_groupa.stride, f_groupa.n)
-	variance := VarianceWithFixedMean(f_groupa.group, f_groupa.stride, f_groupa.n, mean)
-	correct := assert.EqualFloat(variance, f_groupa.variance_with_fixed_mean, delta64)
+	var mean, variance float64
+	var correct bool
+	// test float
+	mean = Mean(f_groupa.group, f_groupa.stride, f_groupa.n)
+	variance = VarianceWithFixedMean(f_groupa.group, f_groupa.stride, f_groupa.n, mean)
+	correct = assert.EqualFloat(variance, f_groupa.variance_with_fixed_mean, delta64)
 	if !correct {
 		t.Errorf("variance: %f, expected: %f\n", variance, f_groupa.variance)
+	}
+	// test int
+	mean = Mean(i_groupa.group, i_groupa.stride, i_groupa.n)
+	variance = VarianceWithFixedMean(i_groupa.group, i_groupa.stride, i_groupa.n, mean)
+	correct = assert.EqualFloat(variance, i_groupa.variance_with_fixed_mean, delta64)
+	if !correct {
+		t.Errorf("variance_with_fixed_mean: %f, expected %f\n", variance, i_groupa.variance_with_fixed_mean)
 	}
 }
 
 func TestVariance(t *testing.T) {
-	variance := Variance(f_groupb.group, f_groupb.stride, f_groupb.n)
-	correct := assert.EqualFloat(variance, f_groupb.variance, delta64)
+	var variance float64
+	var correct bool
+	// test float
+	variance = Variance(f_groupb.group, f_groupb.stride, f_groupb.n)
+	correct = assert.EqualFloat(variance, f_groupb.variance, delta64)
 	if !correct {
 		t.Errorf("variance: %f, expected: %f\n", variance, f_groupb.variance)
+	}
+	// test int
+	variance = Variance(i_groupa.group, i_groupa.stride, i_groupa.n)
+	correct = assert.EqualFloat(variance, i_groupa.variance, delta64)
+	if !correct {
+		t.Errorf("variance: %f, expected: %f\n", variance, i_groupa.variance)
 	}
 }
 
 func TestSdWithFixedMean(t *testing.T) {
-	mean := MeanFloats(f_groupa.group, f_groupa.stride, f_groupa.n)
-	sd := SdWithFixedMean(f_groupa.group, f_groupa.stride, f_groupa.n, mean)
-	correct := assert.EqualFloat(sd, f_groupa.sd_with_fixed_mean, delta64)
+	var mean, sd float64
+	var correct bool
+	// test float
+	mean = Mean(f_groupa.group, f_groupa.stride, f_groupa.n)
+	sd = SdWithFixedMean(f_groupa.group, f_groupa.stride, f_groupa.n, mean)
+	correct = assert.EqualFloat(sd, f_groupa.sd_with_fixed_mean, delta64)
 	if !correct {
 		t.Errorf("sd_with_fixed_mean: %f, but expected: %f\n", sd, f_groupa.sd_with_fixed_mean)
+	}
+	// test int
+	mean = Mean(i_groupa.group, i_groupa.stride, i_groupa.n)
+	sd = SdWithFixedMean(i_groupa.group, i_groupa.stride, i_groupa.n, mean)
+	correct = assert.EqualFloat(sd, i_groupa.sd_with_fixed_mean, delta64)
+	if !correct {
+		t.Errorf("sd_with_fixed_mean: %f, but expected: %f\n", sd, i_groupa.sd_with_fixed_mean)
 	}
 }
 
 func TestSd(t *testing.T) {
-	sd := Sd(f_groupa.group, f_groupa.stride, f_groupa.n)
-	correct := assert.EqualFloat(sd, f_groupa.sd, delta64)
+	var sd float64
+	var correct bool
+	// test float
+	sd = Sd(f_groupa.group, f_groupa.stride, f_groupa.n)
+	correct = assert.EqualFloat(sd, f_groupa.sd, delta64)
 	if !correct {
 		t.Errorf("sd: %f, expected: %f\n", sd, f_groupa.sd)
+	}
+	// test int
+	sd = Sd(i_groupa.group, i_groupa.stride, i_groupa.n)
+	correct = assert.EqualFloat(sd, i_groupa.sd, delta64)
+	if !correct {
+		t.Errorf("sd: %f, expected: %f\n", sd, i_groupa.sd)
 	}
 }
 
 func TestTss(t *testing.T) {
-	tss := Tss(f_groupb.group, f_groupb.stride, f_groupb.n)
-	correct := assert.EqualFloat(tss, f_groupb.tss, delta64)
+	var tss float64
+	var correct bool
+	// test float
+	tss = Tss(f_groupb.group, f_groupb.stride, f_groupb.n)
+	correct = assert.EqualFloat(tss, f_groupb.tss, delta64)
 	if !correct {
 		t.Errorf("tss: %f, expected: %f\n", tss, f_groupb.tss)
 	}
@@ -182,9 +239,18 @@ func TestTssM(t *testing.T) {
 }
 
 func TestAbsdev(t *testing.T) {
-	absdev := Absdev(f_groupa.group, f_groupa.stride, f_groupa.n)
-	correct := assert.EqualFloat(absdev, f_groupa.absdev, delta64)
+	var absdev float64
+	var correct bool
+	// test float
+	absdev = Absdev(f_groupa.group, f_groupa.stride, f_groupa.n)
+	correct = assert.EqualFloat(absdev, f_groupa.absdev, delta64)
 	if !correct {
 		t.Errorf("absdev: %f, expected: %f\n", absdev, f_groupa.absdev)
+	}
+	// test int
+	absdev = Absdev(i_groupa.group, i_groupa.stride, i_groupa.n)
+	correct = assert.EqualFloat(absdev, i_groupa.absdev, delta64)
+	if !correct {
+		t.Errorf("absdev: %f, expected: %f\n", absdev, i_groupa.absdev)
 	}
 }
