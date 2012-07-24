@@ -1,4 +1,4 @@
-package integration
+package integra
 
 import (
 	"github.com/mingzhi/go-utils/assert"
