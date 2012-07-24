@@ -5,11 +5,11 @@ import (
 	"math"
 )
 
-type IntegrateError struct {
+type IError struct {
 	message string
 }
 
-func (err IntegrateError) Error() string {
+func (err IError) Error() string {
 	return err.message
 }
 

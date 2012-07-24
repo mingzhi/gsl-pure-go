@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-func Qng(f gsl.Function, a, b, epsabs, epsrel float64) (result, abserr float64, neval int, err error) {
+func Qng(f Function, a, b, epsabs, epsrel float64) (result, abserr float64, neval int, err error) {
 	var (
 		fv1, fv2, fv3, fv4         [5]float64
 		savfun                     [21]float64 // array of function values which have been computed
@@ -25,7 +25,7 @@ func Qng(f gsl.Function, a, b, epsabs, epsrel float64) (result, abserr float64, 
 		result = 0.0
 		abserr = 0.0
 		neval = 0
-		err = IntegrateError{message: "tolerance cannot be acheived with given epsabs and epsrel"}
+		err = IError{message: "tolerance cannot be acheived with given epsabs and epsrel"}
 		return
 	}
 
@@ -140,7 +140,7 @@ func Qng(f gsl.Function, a, b, epsabs, epsrel float64) (result, abserr float64, 
 	result = result_kronrod
 	abserr = reserr
 	neval = 87
-	err = IntegrateError{message: "failed to reach tolerance with highest-order rule"}
+	err = IError{message: "failed to reach tolerance with highest-order rule"}
 
 	return
 }
