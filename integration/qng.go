@@ -119,7 +119,7 @@ func Qng(f gsl.Function, a, b, epsabs, epsrel float64) (result, abserr float64, 
 
 	for k := 0; k < 22; k++ {
 		abscissa := half_length * x4[k]
-		res87 += w87b[k]*f.Evaluate(center+abscissa) + f.Evaluate(center-abscissa)
+		res87 += w87b[k] * (f.Evaluate(center+abscissa) + f.Evaluate(center-abscissa))
 	}
 
 	/*  test for convergence */
