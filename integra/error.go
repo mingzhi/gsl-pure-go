@@ -5,14 +5,6 @@ import (
 	"math"
 )
 
-type IError struct {
-	message string
-}
-
-func (err IError) Error() string {
-	return err.message
-}
-
 func RescaleError(reserr, resabs, resasc float64) float64 {
 	reserr = math.Abs(reserr)
 	if resasc != 0 && reserr != 0 {

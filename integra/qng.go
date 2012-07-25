@@ -2,10 +2,11 @@ package integra
 
 import (
 	"github.com/mingzhi/gsl"
+	"github.com/mingzhi/gsl/err"
 	"math"
 )
 
-func Qng(f Function, a, b, epsabs, epsrel float64) (result, abserr float64, neval int, err error) {
+func Qng(f Function, a, b, epsabs, epsrel float64) (result, abserr float64, neval int, e error) {
 	var (
 		fv1, fv2, fv3, fv4         [5]float64
 		savfun                     [21]float64 // array of function values which have been computed
@@ -19,13 +20,13 @@ func Qng(f Function, a, b, epsabs, epsrel float64) (result, abserr float64, neva
 	half_length := 0.5 * (b - a)
 	abs_half_length := math.Abs(half_length)
 	center := 0.5 * (a + b)
-	f_center := f.Evaluate(center)
+	f_center := Evaluate(f, center)
 
 	if epsabs <= 0 && (epsrel < 0.5e-28 || epsrel < 50*gsl.EpsilonFloat64) {
 		result = 0.0
 		abserr = 0.0
 		neval = 0
-		err = IError{message: "tolerance cannot be acheived with given epsabs and epsrel"}
+		e = err.Error{Message: "tolerance cannot be acheived with given epsabs and epsrel"}
 		return
 	}
 
@@ -37,8 +38,8 @@ func Qng(f Function, a, b, epsabs, epsrel float64) (result, abserr float64, neva
 
 	for k := 0; k < 5; k++ {
 		abscissa := half_length * x1[k]
-		fval1 := f.Evaluate(center + abscissa)
-		fval2 := f.Evaluate(center - abscissa)
+		fval1 := Evaluate(f, center+abscissa)
+		fval2 := Evaluate(f, center-abscissa)
 		fval := fval1 + fval2
 		res10 += w10[k] * fval
 		res21 += w21a[k] * fval
@@ -50,8 +51,8 @@ func Qng(f Function, a, b, epsabs, epsrel float64) (result, abserr float64, neva
 
 	for k := 0; k < 5; k++ {
 		abscissa := half_length * x2[k]
-		fval1 := f.Evaluate(center + abscissa)
-		fval2 := f.Evaluate(center - abscissa)
+		fval1 := Evaluate(f, center+abscissa)
+		fval2 := Evaluate(f, center-abscissa)
 		fval := fval1 + fval2
 		res21 += w21b[k] * fval
 		resabs += w21b[k] * (math.Abs(fval1) + math.Abs(fval2))
@@ -92,7 +93,7 @@ func Qng(f Function, a, b, epsabs, epsrel float64) (result, abserr float64, neva
 
 	for k := 0; k < 11; k++ {
 		abscissa := half_length * x3[k]
-		fval := f.Evaluate(center+abscissa) + f.Evaluate(center-abscissa)
+		fval := Evaluate(f, center+abscissa) + Evaluate(f, center-abscissa)
 		res43 += fval * w43b[k]
 		savfun[k+10] = fval
 	}
@@ -119,7 +120,7 @@ func Qng(f Function, a, b, epsabs, epsrel float64) (result, abserr float64, neva
 
 	for k := 0; k < 22; k++ {
 		abscissa := half_length * x4[k]
-		res87 += w87b[k] * (f.Evaluate(center+abscissa) + f.Evaluate(center-abscissa))
+		res87 += w87b[k] * (Evaluate(f, center+abscissa) + Evaluate(f, center-abscissa))
 	}
 
 	/*  test for convergence */
@@ -140,7 +141,7 @@ func Qng(f Function, a, b, epsabs, epsrel float64) (result, abserr float64, neva
 	result = result_kronrod
 	abserr = reserr
 	neval = 87
-	err = IError{message: "failed to reach tolerance with highest-order rule"}
+	e = err.Error{Message: "failed to reach tolerance with highest-order rule"}
 
 	return
 }

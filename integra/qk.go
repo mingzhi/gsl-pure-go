@@ -8,7 +8,7 @@ func Qk(n int, xgk, wg, wgk, fv1, fv2 []float64, f Function, a, b float64) (resu
 	center := 0.5 * (a + b)
 	half_length := 0.5 * (b - a)
 	abs_half_length := math.Abs(half_length)
-	f_center := f.Evaluate(center)
+	f_center := Evaluate(f, center)
 
 	result_gauss := 0.0
 	result_kronrod := f_center * wgk[n-1]
@@ -25,8 +25,8 @@ func Qk(n int, xgk, wg, wgk, fv1, fv2 []float64, f Function, a, b float64) (resu
 	for j := 0; j < (n-1)/2; j++ {
 		jtw := j*2 + 1 /* in original fortran j=1,2,3 jtw=2,4,6 */
 		abscissa := half_length * xgk[jtw]
-		fval1 := f.Evaluate(center - abscissa)
-		fval2 := f.Evaluate(center + abscissa)
+		fval1 := Evaluate(f, center-abscissa)
+		fval2 := Evaluate(f, center+abscissa)
 		fsum := fval1 + fval2
 		fv1[jtw] = fval1
 		fv2[jtw] = fval2
@@ -38,8 +38,8 @@ func Qk(n int, xgk, wg, wgk, fv1, fv2 []float64, f Function, a, b float64) (resu
 	for j := 0; j < n/2; j++ {
 		jtwm1 := j * 2
 		abscissa := half_length * xgk[jtwm1]
-		fval1 := f.Evaluate(center - abscissa)
-		fval2 := f.Evaluate(center + abscissa)
+		fval1 := Evaluate(f, center-abscissa)
+		fval2 := Evaluate(f, center+abscissa)
 		fv1[jtwm1] = fval1
 		fv2[jtwm1] = fval2
 		result_kronrod += wgk[jtwm1] * (fval1 + fval2)
